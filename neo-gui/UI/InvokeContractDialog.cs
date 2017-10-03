@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Windows.Forms;
+using System.Text;
 
 namespace Neo.UI
 {
@@ -296,10 +297,32 @@ namespace Neo.UI
                             "Return from Test");
                     }
                 }
-            }
-            else
-            {
-                MessageBox.Show(Strings.ExecutionFailed);
+            } else if (ExecutionEngine.LastException != null) {
+                StringBuilder sb = new StringBuilder();
+                  try {
+                     foreach (StackItem item in ExecutionEngine.LastEvaluationStack) {
+                        sb.AppendLine(BitConverter.ToString(item.GetByteArray()));
+                     }
+                  } catch {
+                     foreach (StackItem item in ExecutionEngine.LastEvaluationStack) {
+                        sb.Append("Array[");
+                        foreach (StackItem item2 in item.GetArray()) {
+                           sb.Append(BitConverter.ToString(item2.GetByteArray()));
+                           sb.Append(", ");
+                        }
+                        sb.AppendLine("]");
+                     }
+                  }
+
+                string message = String.Format("{0} {1} {2} {3}\nEvaluation stack:\n{4}",
+                      Strings.ExecutionFailed,
+                      ExecutionEngine.LastException.Message,
+                      ExecutionEngine.LastException.StackTrace,
+                      sb.ToString());
+
+                MessageBox.Show(message);
+            } else {
+                MessageBox.Show(Strings.ExecutionFailed + ". No exception message.");
             }
         }
 
