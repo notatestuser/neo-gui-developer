@@ -1,7 +1,5 @@
 ﻿using Neo.Core;
-using Neo.Cryptography.ECC;
-using Neo.Implementations.Blockchains.LevelDB;
-using Neo.IO.Caching;
+using Neo.IO.Json;
 using Neo.Properties;
 using Neo.SmartContract;
 using Neo.VM;
@@ -11,6 +9,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using System.Windows.Forms;
 using System.Text;
 
@@ -26,6 +25,7 @@ namespace Neo.UI
         private int numRequiredParameters = 0;                                                      // the number of required parameters for loaded contract
         private enum RequiredParameters { Required, Optional }
 
+        private static readonly Fixed8 net_fee = Fixed8.FromDecimal(0.001m);
         public InvokeContractDialog(InvocationTransaction tx = null, string deployedScriptHash = null)
         {
             InitializeComponent();
@@ -42,6 +42,7 @@ namespace Neo.UI
 
         public InvocationTransaction GetTransaction()
         {
+            Fixed8 fee = tx.Gas.Equals(Fixed8.Zero) ? net_fee : Fixed8.Zero;
             return Program.CurrentWallet.MakeTransaction(new InvocationTransaction
             {
                 Version = tx.Version,
@@ -50,7 +51,7 @@ namespace Neo.UI
                 Attributes = tx.Attributes,
                 Inputs = tx.Inputs,
                 Outputs = tx.Outputs
-            });
+            }, fee: fee);
         }
 
         private enum ScriptPackMethods
@@ -71,8 +72,11 @@ namespace Neo.UI
 
             using (ScriptBuilder sb = new ScriptBuilder())
             {
+                
                 PushParameters(sb, requiredParameters);
                 sb.EmitAppCall(scriptHash.ToArray(), false);
+                
+//                sb.EmitAppCall(scriptHash.ToArray(), requiredParameters);
                 txtCustomScript.Text = sb.ToArray().ToHexString();
                 //txtCustomScript.Text = txtCustomScript.Text;
             }
@@ -195,7 +199,7 @@ namespace Neo.UI
             if (contract == null) return;
 
             // valid script hash was found on blockchain
-            requiredParameters.AddRange(contract.Code.ParameterList.Select(p => new ContractParameter { Type = p }));
+            requiredParameters.AddRange(contract.ParameterList.Select(p => new ContractParameter { Type = p }));
             requiredParameters.Add(new ContractParameter { Type = ContractParameterType.Array, Value = new List<ContractParameter>() });
             numRequiredParameters = requiredParameters.Count - 1;
 
@@ -209,7 +213,7 @@ namespace Neo.UI
                 txtAuthor.Text += $" ({contract.Email})";
             }
             txtDescription.Text = contract.Description;
-            txtParamList.Text = string.Join(", ", contract.Code.ParameterList);
+            txtParamList.Text = string.Join(", ", contract.ParameterList);
 
             // show any required parameters for this contract
             InitParmTreeView();
@@ -257,34 +261,20 @@ namespace Neo.UI
             if (tx.Inputs == null) tx.Inputs = new CoinReference[0];
             if (tx.Outputs == null) tx.Outputs = new TransactionOutput[0];
             if (tx.Scripts == null) tx.Scripts = new Witness[0];
-            LevelDBBlockchain blockchain = (LevelDBBlockchain)Blockchain.Default;
-            DataCache<UInt160, AccountState> accounts = blockchain.GetTable<UInt160, AccountState>();
-            DataCache<ECPoint, ValidatorState> validators = blockchain.GetTable<ECPoint, ValidatorState>();
-            DataCache<UInt256, AssetState> assets = blockchain.GetTable<UInt256, AssetState>();
-            DataCache<UInt160, ContractState> contracts = blockchain.GetTable<UInt160, ContractState>();
-            DataCache<StorageKey, StorageItem> storages = blockchain.GetTable<StorageKey, StorageItem>();
-            CachedScriptTable script_table = new CachedScriptTable(contracts);
-            StateMachine service = new StateMachine(accounts, validators, assets, contracts, storages);
+            ApplicationEngine engine = ApplicationEngine.Run(tx.Script, tx);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"VM State: {engine.State}");
+            sb.AppendLine($"Gas Consumed: {engine.GasConsumed}");
+            sb.AppendLine($"Evaluation Stack: {new JArray(engine.EvaluationStack.Select(p => p.ToParameter().ToJson()))}");
+            txtInvokeOutput.Text = sb.ToString();
 
-            ////////////////////////////////////////////////////////////
-            ////////////////////////EXPERIMENTAL////////////////////////
-            //testTx = tx;
-            //testTx.Gas = Fixed8.Satoshi;
-            //testTx = GetTransaction();
-            //ApplicationEngine engine = new ApplicationEngine(TriggerType.Application, testTx, script_table, service, Fixed8.Zero, true);
-            //engine.LoadScript(testTx.Script, false);
-            ////////////////////////EXPERIMENTAL////////////////////////            
-            ////////////////////////////////////////////////////////////
-
-            ApplicationEngine engine = new ApplicationEngine(TriggerType.Application, tx, script_table, service, Fixed8.Zero, true);
-            engine.LoadScript(tx.Script, false);
-
-            if (engine.Execute())
+            if (!engine.State.HasFlag(VMState.FAULT))
             {
                 tx.Gas = engine.GasConsumed - Fixed8.FromDecimal(10);
-                if (tx.Gas < Fixed8.One) tx.Gas = Fixed8.One;
+                if (tx.Gas < Fixed8.Zero) tx.Gas = Fixed8.Zero;
                 tx.Gas = tx.Gas.Ceiling();
-                label7.Text = tx.Gas + " gas";
+                Fixed8 fee = tx.Gas.Equals(Fixed8.Zero) ? net_fee : tx.Gas;
+                label7.Text = fee + " gas";
                 btnInvoke.Enabled = true;
                 if (engine.EvaluationStack.Count != 0)
                 {
@@ -396,6 +386,7 @@ namespace Neo.UI
             {
                 case ContractParameterType.Signature:
                 case ContractParameterType.ByteArray:
+                case ContractParameterType.String:
                     return System.Text.Encoding.UTF8.GetString((byte[])paramValue);
                 case ContractParameterType.Boolean:
                 case ContractParameterType.Integer:
