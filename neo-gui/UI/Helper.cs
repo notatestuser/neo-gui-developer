@@ -3,6 +3,7 @@ using Neo.Properties;
 using Neo.SmartContract;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Neo.UI
@@ -45,11 +46,20 @@ namespace Neo.UI
                 MessageBox.Show(Strings.UnsynchronizedBlock);
                 return;
             }
+
+               // Append the entry to the invoke tx log
+               using (StreamWriter sw = File.AppendText("invoketxlog.txt")) 
+               {
+                   sw.WriteLine(BitConverter.ToString(tx.GetHashData()));
+                   sw.WriteLine();
+               }
+
             Program.CurrentWallet.Sign(context);
             if (context.Completed)
             {
                 context.Verifiable.Scripts = context.GetScripts();
                 Program.CurrentWallet.SaveTransaction(tx);
+
                 Program.LocalNode.Relay(tx);
                 InformationBox.Show(tx.Hash.ToString(), Strings.SendTxSucceedMessage, Strings.SendTxSucceedTitle);
             }
