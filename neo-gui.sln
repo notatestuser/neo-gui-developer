@@ -1,9 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.15
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "neo-gui", "neo-gui\neo-gui.csproj", "{CFC243F0-F4E3-4754-8E21-8BA17E1C1788}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "neo-vm", "..\neo-vm\src\neo-vm\neo-vm.csproj", "{A93E4443-981D-4208-B8F5-29127B8873FD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "neo", "..\neo\neo\neo.csproj", "{FC791A04-D8DE-49AE-9D27-A4D1779DC739}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "neo-cli", "..\neo-cli\neo-cli\neo-cli.csproj", "{A1372911-5258-4E39-BE91-2C72CFF3FF87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,8 +21,23 @@ Global
 		{CFC243F0-F4E3-4754-8E21-8BA17E1C1788}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFC243F0-F4E3-4754-8E21-8BA17E1C1788}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFC243F0-F4E3-4754-8E21-8BA17E1C1788}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A93E4443-981D-4208-B8F5-29127B8873FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A93E4443-981D-4208-B8F5-29127B8873FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A93E4443-981D-4208-B8F5-29127B8873FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A93E4443-981D-4208-B8F5-29127B8873FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC791A04-D8DE-49AE-9D27-A4D1779DC739}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC791A04-D8DE-49AE-9D27-A4D1779DC739}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC791A04-D8DE-49AE-9D27-A4D1779DC739}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC791A04-D8DE-49AE-9D27-A4D1779DC739}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1372911-5258-4E39-BE91-2C72CFF3FF87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1372911-5258-4E39-BE91-2C72CFF3FF87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1372911-5258-4E39-BE91-2C72CFF3FF87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1372911-5258-4E39-BE91-2C72CFF3FF87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DB195786-7304-49FB-9E08-55A08A93AC0A}
 	EndGlobalSection
 EndGlobal
