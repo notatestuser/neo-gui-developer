@@ -2,6 +2,7 @@
 using Neo.Implementations.Blockchains.LevelDB;
 using Neo.Implementations.Wallets.EntityFramework;
 using Neo.Network;
+using Neo.Network.RPC;
 using Neo.Properties;
 using Neo.UI;
 using System;
@@ -83,6 +84,13 @@ namespace Neo
                 sw.WriteLine();
             }
 
+            // Create invoketxlog.txt for writing invoke logs to
+            using (StreamWriter sw = File.CreateText("invoketxlog.txt")) 
+            {
+                sw.WriteLine("Invoke log started at {0}", DateTime.Now.ToString());
+                sw.WriteLine();
+            }
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -116,6 +124,12 @@ namespace Neo
             using (LocalNode = new LocalNode())
             {
                 LocalNode.UpnpEnabled = true;
+
+               // Start the RPC server
+               RpcServer rpc = new RpcServer(LocalNode);
+               rpc.Start(new string[] { "http://*:20332" });
+               /////
+
                 Application.Run(MainForm = new MainForm(xdoc));
             }
             using (FileStream fs = new FileStream(PeerStatePath, FileMode.Create, FileAccess.Write, FileShare.None))
