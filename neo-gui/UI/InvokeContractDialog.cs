@@ -265,7 +265,7 @@ namespace Neo.UI
             StringBuilder sb = new StringBuilder();
             sb.AppendLine($"VM State: {engine.State}");
             sb.AppendLine($"Gas Consumed: {engine.GasConsumed}");
-            sb.AppendLine($"Evaluation Stack: {new JArray(engine.EvaluationStack.Select(p => p.ToParameter().ToJson()))}");
+            //sb.AppendLine($"Evaluation Stack: {new JArray(engine.EvaluationStack.Select(p => p.ToParameter().ToJson()))}");
             txtInvokeOutput.Text = sb.ToString();
 
             if (!engine.State.HasFlag(VMState.FAULT))
