@@ -46,7 +46,7 @@ namespace Neo.Cryptography
             }
         }
 
-        public static CertificateQueryResult Query(ECPoint pubkey)
+        public static CertificateQueryResult Query(Neo.Cryptography.ECC.ECPoint pubkey)
         {
             return Query(Contract.CreateSignatureRedeemScript(pubkey).ToScriptHash());
         }
@@ -95,7 +95,7 @@ namespace Neo.Cryptography
                 results[hash].Type = CertificateQueryResultType.Missing;
                 return;
             }
-            if (!hash.Equals(Contract.CreateSignatureRedeemScript(ECPoint.DecodePoint(cert.PublicKey.EncodedKeyValue.RawData, ECCurve.Secp256r1)).ToScriptHash()))
+            if (!hash.Equals(Contract.CreateSignatureRedeemScript(Neo.Cryptography.ECC.ECPoint.DecodePoint(cert.PublicKey.EncodedKeyValue.RawData, Neo.Cryptography.ECC.ECCurve.Secp256r1)).ToScriptHash()))
             {
                 results[hash].Type = CertificateQueryResultType.Missing;
                 return;
